@@ -40,13 +40,12 @@
 
         body.rgb-mode {
             background-image: none;
-            animation: rgbBg 0.6s linear infinite;
+            animation: rgbBg 0.5s linear infinite;
         }
 
         body.rgb-mode .kartu {
-            animation: rgbBorder 0.6s linear infinite, shake 0.3s ease-in-out infinite;
+            animation: rgbBorder 0.5s linear infinite, shake 0.25s ease-in-out infinite;
             background-color: rgba(15, 23, 42, 0.94);
-            backdrop-filter: blur(8px);
         }
 
         .kartu {
@@ -107,7 +106,9 @@
             gap: 12px;
         }
 
-        button.choice-btn {
+        button.choice-btn, a.choice-btn {
+            display: block;
+            text-decoration: none;
             border: none;
             padding: 14px 20px;
             font-size: 15px;
@@ -118,7 +119,7 @@
             transition: transform 0.1s ease, background-color 0.2s ease;
         }
 
-        button.choice-btn:active {
+        button.choice-btn:active, a.choice-btn:active {
             transform: scale(0.97);
         }
 
@@ -140,37 +141,6 @@
 
         .btn-skip:hover {
             background-color: var(--slate-hover);
-        }
-
-        .fake-exit {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #0f172a;
-            color: #ffffff;
-            border: 2px solid #ffffff;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            display: none;
-            z-index: 20;
-            transition: top 0.12s ease, left 0.12s ease;
-        }
-
-        /* Diletakkan tepat di belakang kartu utama (z-index: 1) dengan opacity 0.15 agar lolos sensor browser HP */
-        #yt-wrapper {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 260px;
-            height: 260px;
-            opacity: 0.15;
-            pointer-events: none;
-            z-index: 1;
-            overflow: hidden;
         }
 
         @keyframes rgbBg {
@@ -204,13 +174,6 @@
 </head>
 <body>
 
-    <div id="yt-wrapper">
-        <div id="playerSkip"></div>
-        <div id="playerMoney"></div>
-    </div>
-
-    <button id="fakeExitBtn" class="fake-exit">✕ Exit Fullscreen</button>
-
     <main id="card" class="kartu">
         <div class="badge">
             <span class="dot"></span>
@@ -225,143 +188,41 @@
         </div>
     </main>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         const btnSkip = document.getElementById('btnSkip');
         const btnMoney = document.getElementById('btnMoney');
         const btnGroup = document.getElementById('btnGroup');
-        const fakeExitBtn = document.getElementById('fakeExitBtn');
         const statusText = document.getElementById('statusText');
         const titleText = document.getElementById('titleText');
         const descText = document.getElementById('descText');
 
-        let isPrankActive = false;
-        let escapeCount = 0;
-        let playerSkip;  // Lagu: mUsji_JpIjc
-        let playerMoney; // Lagu: vHSNZK4Je-Y
-        let activePlayer = null;
+        const urlSkip = 'https://www.youtube.com/watch?v=mUsji_JpIjc';
+        const urlMoney = 'https://www.youtube.com/watch?v=k2ZEsfteJ5g';
 
-        function createPlayer(elementId, videoId) {
-            return new YT.Player(elementId, {
-                height: '260',
-                width: '260',
-                videoId: videoId,
-                playerVars: {
-                    'autoplay': 0,
-                    'controls': 0,
-                    'playsinline': 1,
-                    'loop': 1,
-                    'playlist': videoId
-                },
-                events: {
-                    'onError': (e) => {
-                        // Kode 101 atau 150 berarti pemilik video YouTube melarang pemutaran di website luar
-                        if (e.data === 101 || e.data === 150) {
-                            console.warn('Video diblokir untuk embed:', videoId);
-                        }
-                    }
-                }
-            });
-        }
-
-        function onYouTubeIframeAPIReady() {
-            playerSkip = createPlayer('playerSkip', 'mUsji_JpIjc');
-            playerMoney = createPlayer('playerMoney', 'vHSNZK4Je-Y');
-        }
-
-        function enterFullscreen() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen().catch(() => {});
-            } else if (elem.webkitRequestFullscreen) {
-                elem.webkitRequestFullscreen();
-            }
-        }
-
-        function moveFakeExit() {
-            escapeCount++;
-            const maxX = window.innerWidth - fakeExitBtn.offsetWidth - 20;
-            const maxY = window.innerHeight - fakeExitBtn.offsetHeight - 20;
-            const randomX = Math.max(20, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(20, Math.floor(Math.random() * maxY));
-
-            fakeExitBtn.style.right = 'auto';
-            fakeExitBtn.style.left = `${randomX}px`;
-            fakeExitBtn.style.top = `${randomY}px`;
-
-            if (escapeCount === 3) {
-                fakeExitBtn.textContent = 'Mau ke mana bang 😂';
-            } else if (escapeCount === 6) {
-                fakeExitBtn.textContent = 'Gak kena wlee!';
-            }
-        }
-
-        function forcePlaySound() {
-            enterFullscreen();
-            if (activePlayer && typeof activePlayer.playVideo === 'function') {
-                activePlayer.unMute();
-                activePlayer.setVolume(100);
-                activePlayer.playVideo();
-            }
-        }
-
-        function triggerPrank(choice) {
-            enterFullscreen();
-            isPrankActive = true;
+        function triggerRedirectPrank(choice) {
             document.body.classList.add('rgb-mode');
-            fakeExitBtn.style.display = 'block';
+            const targetUrl = choice === 'skip' ? urlSkip : urlMoney;
 
             if (choice === 'skip') {
-                activePlayer = playerSkip;
-                if (playerMoney && typeof playerMoney.pauseVideo === 'function') {
-                    playerMoney.pauseVideo();
-                }
-
                 statusText.textContent = 'SULTAN TERDETEKSI';
                 titleText.textContent = 'SOMBONG AMAT BANG!';
                 descText.innerHTML = 'Koin di jalan aja dilewatin, berasa saldo ATM gak pernah kering ya? <strong>Besok traktir!</strong>';
             } else {
-                activePlayer = playerMoney;
-                if (playerSkip && typeof playerSkip.pauseVideo === 'function') {
-                    playerSkip.pauseVideo();
-                }
-
                 statusText.textContent = 'PRINSIP EKONOMI';
                 titleText.textContent = 'MANTAP, JIWA PENGUSAHA!';
                 descText.innerHTML = 'Seratus perak pun kalau dikumpulin jadi bukit. <strong>Uang tetaplah uang!</strong>';
             }
 
-            // Jalankan audio langsung di dalam event klik pengguna
-            if (activePlayer && typeof activePlayer.playVideo === 'function') {
-                activePlayer.unMute();
-                activePlayer.setVolume(100);
-                activePlayer.playVideo();
-            }
+            btnGroup.innerHTML = `<a href="${targetUrl}" class="choice-btn btn-money">🔊 MEMBUKA HADIAH...</a>`;
 
-            btnGroup.innerHTML = `<button class="choice-btn btn-money" onclick="forcePlaySound()">🔊 KENCANGKAN SUARA !!!</button>`;
+            // Tampilkan efek RGB 1.2 detik lalu langsung alihkan ke YouTube
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 1200);
         }
 
-        btnSkip.addEventListener('click', () => triggerPrank('skip'));
-        btnMoney.addEventListener('click', () => triggerPrank('money'));
-
-        fakeExitBtn.addEventListener('mouseover', moveFakeExit);
-        fakeExitBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            moveFakeExit();
-        });
-
-        document.addEventListener('click', (e) => {
-            if (isPrankActive && !document.fullscreenElement && e.target !== fakeExitBtn) {
-                enterFullscreen();
-            }
-        });
-
-        window.addEventListener('beforeunload', (e) => {
-            if (isPrankActive) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        });
+        btnSkip.addEventListener('click', () => triggerRedirectPrank('skip'));
+        btnMoney.addEventListener('click', () => triggerRedirectPrank('money'));
     </script>
 
 </body>
