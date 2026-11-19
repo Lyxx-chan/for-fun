@@ -1,2 +1,365 @@
-<h1>Yahoow !</h1>
-<p>First Web while rottin in ma bed :3</p>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dilema Uang Koin</title>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --card-bg: #131b2e;
+            --border-color: #243049;
+            --gold: #f59e0b;
+            --gold-hover: #d97706;
+            --slate-btn: #334155;
+            --slate-hover: #475569;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at top, #1e1b4b 0%, var(--bg-dark) 60%);
+            color: var(--text-primary);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100dvh;
+            padding: 20px;
+            overflow: hidden;
+            transition: background 0.2s ease;
+        }
+
+        /* Efek RGB Chaos saat pilihan diklik */
+        body.rgb-mode {
+            background-image: none;
+            animation: rgbBg 0.6s linear infinite;
+        }
+
+        body.rgb-mode .kartu {
+            animation: rgbBorder 0.6s linear infinite, shake 0.3s ease-in-out infinite;
+            background-color: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(8px);
+        }
+
+        .kartu {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 36px 26px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+            position: relative;
+            z-index: 10;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: rgba(245, 158, 11, 0.14);
+            color: var(--gold);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 999px;
+            margin-bottom: 18px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            background-color: var(--gold);
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 26px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button.choice-btn {
+            border: none;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+        }
+
+        button.choice-btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-money {
+            background-color: var(--gold);
+            color: #090d16;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+        }
+
+        .btn-money:hover {
+            background-color: var(--gold-hover);
+        }
+
+        .btn-skip {
+            background-color: var(--slate-btn);
+            color: var(--text-primary);
+            border: 1px solid #475569;
+        }
+
+        .btn-skip:hover {
+            background-color: var(--slate-hover);
+        }
+
+        .fake-exit {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #0f172a;
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: none;
+            z-index: 20;
+            transition: top 0.12s ease, left 0.12s ease;
+        }
+
+        /* Dua player YouTube transparan untuk pre-buffer kedua lagu */
+        #yt-wrapper {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            opacity: 0.01;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes rgbBg {
+            0%   { background-color: #ff0055; }
+            20%  { background-color: #ff9900; }
+            40%  { background-color: #33ff00; }
+            60%  { background-color: #00ffff; }
+            80%  { background-color: #7700ff; }
+            100% { background-color: #ff0055; }
+        }
+
+        @keyframes rgbBorder {
+            0%   { border-color: #00ffff; box-shadow: 0 0 35px #00ffff; }
+            33%  { border-color: #ff0055; box-shadow: 0 0 35px #ff0055; }
+            66%  { border-color: #33ff00; box-shadow: 0 0 35px #33ff00; }
+            100% { border-color: #00ffff; box-shadow: 0 0 35px #00ffff; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.3); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-4px, 3px) rotate(-1deg); }
+            50% { transform: translate(4px, -3px) rotate(1deg); }
+            75% { transform: translate(-3px, -3px) rotate(-1deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="yt-wrapper">
+        <div id="playerSkip"></div>
+        <div id="playerMoney"></div>
+    </div>
+
+    <button id="fakeExitBtn" class="fake-exit">✕ Exit Fullscreen</button>
+
+    <main id="card" class="kartu">
+        <div class="badge">
+            <span class="dot"></span>
+            <span id="statusText">Uji Moralitas</span>
+        </div>
+        <h1 id="titleText">Jika kamu menemukan uang koin di jalan, apakah kamu akan mengambilnya?</h1>
+        <p id="descText">Pilih dengan jujur sesuai prinsip hidupmu.</p>
+        
+        <div id="btnGroup" class="btn-group">
+            <button id="btnSkip" class="choice-btn btn-skip">Tidak perlu</button>
+            <button id="btnMoney" class="choice-btn btn-money">Uang tetaplah uang</button>
+        </div>
+    </main>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        const btnSkip = document.getElementById('btnSkip');
+        const btnMoney = document.getElementById('btnMoney');
+        const btnGroup = document.getElementById('btnGroup');
+        const fakeExitBtn = document.getElementById('fakeExitBtn');
+        const statusText = document.getElementById('statusText');
+        const titleText = document.getElementById('titleText');
+        const descText = document.getElementById('descText');
+
+        let isPrankActive = false;
+        let escapeCount = 0;
+        let playerSkip;  // Lagu: mUsji_JpIjc
+        let playerMoney; // Lagu: vHSNZK4Je-Y
+
+        function createPrebufferedPlayer(elementId, videoId) {
+            return new YT.Player(elementId, {
+                height: '200',
+                width: '200',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'playsinline': 1,
+                    'loop': 1,
+                    'playlist': videoId
+                },
+                events: {
+                    'onReady': (event) => {
+                        event.target.mute();
+                        event.target.playVideo();
+                    },
+                    'onStateChange': (event) => {
+                        if (event.data === YT.PlayerState.PLAYING && !isPrankActive) {
+                            event.target.pauseVideo();
+                            event.target.seekTo(0);
+                        }
+                    }
+                }
+            });
+        }
+
+        function onYouTubeIframeAPIReady() {
+            playerSkip = createPrebufferedPlayer('playerSkip', 'mUsji_JpIjc');
+            playerMoney = createPrebufferedPlayer('playerMoney', 'vHSNZK4Je-Y');
+        }
+
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(() => {});
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+        }
+
+        function moveFakeExit() {
+            escapeCount++;
+            const maxX = window.innerWidth - fakeExitBtn.offsetWidth - 20;
+            const maxY = window.innerHeight - fakeExitBtn.offsetHeight - 20;
+            const randomX = Math.max(20, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(20, Math.floor(Math.random() * maxY));
+
+            fakeExitBtn.style.right = 'auto';
+            fakeExitBtn.style.left = `${randomX}px`;
+            fakeExitBtn.style.top = `${randomY}px`;
+
+            if (escapeCount === 3) {
+                fakeExitBtn.textContent = 'Mau ke mana bang 😂';
+            } else if (escapeCount === 6) {
+                fakeExitBtn.textContent = 'Gak kena wlee!';
+            }
+        }
+
+        function triggerPrank(choice) {
+            enterFullscreen();
+            isPrankActive = true;
+            document.body.classList.add('rgb-mode');
+            fakeExitBtn.style.display = 'block';
+
+            if (choice === 'skip') {
+                // Hentikan lagu satunya & putar lagu pilihan "Tidak perlu"
+                if (playerMoney && typeof playerMoney.stopVideo === 'function') {
+                    playerMoney.stopVideo();
+                }
+                if (playerSkip && typeof playerSkip.playVideo === 'function') {
+                    playerSkip.unMute();
+                    playerSkip.setVolume(100);
+                    playerSkip.playVideo();
+                }
+
+                statusText.textContent = 'SULTAN TERDETEKSI';
+                titleText.textContent = 'SOMBONG AMAT BANG!';
+                descText.innerHTML = 'Koin di jalan aja dilewatin, berasa saldo ATM gak pernah kering ya? <strong>Besok traktir!</strong>';
+            } else {
+                // Hentikan lagu satunya & putar lagu pilihan "Uang tetaplah uang"
+                if (playerSkip && typeof playerSkip.stopVideo === 'function') {
+                    playerSkip.stopVideo();
+                }
+                if (playerMoney && typeof playerMoney.playVideo === 'function') {
+                    playerMoney.unMute();
+                    playerMoney.setVolume(100);
+                    playerMoney.playVideo();
+                }
+
+                statusText.textContent = 'PRINSIP EKONOMI';
+                titleText.textContent = 'MANTAP, JIWA PENGUSAHA!';
+                descText.innerHTML = 'Seratus perak pun kalau dikumpulin jadi bukit. <strong>Uang tetaplah uang!</strong>';
+            }
+
+            // Ganti tombol pilihan menjadi satu tombol keramaian
+            btnGroup.innerHTML = `<button class="choice-btn btn-money" onclick="enterFullscreen()">🔊 KENCANGKAN SUARA !!!</button>`;
+        }
+
+        btnSkip.addEventListener('click', () => triggerPrank('skip'));
+        btnMoney.addEventListener('click', () => triggerPrank('money'));
+
+        fakeExitBtn.addEventListener('mouseover', moveFakeExit);
+        fakeExitBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveFakeExit();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (isPrankActive && !document.fullscreenElement && e.target !== fakeExitBtn) {
+                enterFullscreen();
+            }
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (isPrankActive) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+
+</body>
+</html>
