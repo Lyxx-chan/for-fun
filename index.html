@@ -38,7 +38,6 @@
             transition: background 0.2s ease;
         }
 
-        /* Efek RGB Chaos saat pilihan diklik */
         body.rgb-mode {
             background-image: none;
             animation: rgbBg 0.6s linear infinite;
@@ -46,7 +45,7 @@
 
         body.rgb-mode .kartu {
             animation: rgbBorder 0.6s linear infinite, shake 0.3s ease-in-out infinite;
-            background-color: rgba(15, 23, 42, 0.92);
+            background-color: rgba(15, 23, 42, 0.94);
             backdrop-filter: blur(8px);
         }
 
@@ -160,16 +159,18 @@
             transition: top 0.12s ease, left 0.12s ease;
         }
 
-        /* Dua player YouTube transparan untuk pre-buffer kedua lagu */
+        /* Diletakkan tepat di belakang kartu utama (z-index: 1) dengan opacity 0.15 agar lolos sensor browser HP */
         #yt-wrapper {
             position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 200px;
-            height: 200px;
-            opacity: 0.01;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 260px;
+            height: 260px;
+            opacity: 0.15;
             pointer-events: none;
             z-index: 1;
+            overflow: hidden;
         }
 
         @keyframes rgbBg {
@@ -238,11 +239,12 @@
         let escapeCount = 0;
         let playerSkip;  // Lagu: mUsji_JpIjc
         let playerMoney; // Lagu: vHSNZK4Je-Y
+        let activePlayer = null;
 
-        function createPrebufferedPlayer(elementId, videoId) {
+        function createPlayer(elementId, videoId) {
             return new YT.Player(elementId, {
-                height: '200',
-                width: '200',
+                height: '260',
+                width: '260',
                 videoId: videoId,
                 playerVars: {
                     'autoplay': 0,
@@ -252,14 +254,10 @@
                     'playlist': videoId
                 },
                 events: {
-                    'onReady': (event) => {
-                        event.target.mute();
-                        event.target.playVideo();
-                    },
-                    'onStateChange': (event) => {
-                        if (event.data === YT.PlayerState.PLAYING && !isPrankActive) {
-                            event.target.pauseVideo();
-                            event.target.seekTo(0);
+                    'onError': (e) => {
+                        // Kode 101 atau 150 berarti pemilik video YouTube melarang pemutaran di website luar
+                        if (e.data === 101 || e.data === 150) {
+                            console.warn('Video diblokir untuk embed:', videoId);
                         }
                     }
                 }
@@ -267,8 +265,8 @@
         }
 
         function onYouTubeIframeAPIReady() {
-            playerSkip = createPrebufferedPlayer('playerSkip', 'mUsji_JpIjc');
-            playerMoney = createPrebufferedPlayer('playerMoney', 'vHSNZK4Je-Y');
+            playerSkip = createPlayer('playerSkip', 'mUsji_JpIjc');
+            playerMoney = createPlayer('playerMoney', 'vHSNZK4Je-Y');
         }
 
         function enterFullscreen() {
@@ -298,6 +296,15 @@
             }
         }
 
+        function forcePlaySound() {
+            enterFullscreen();
+            if (activePlayer && typeof activePlayer.playVideo === 'function') {
+                activePlayer.unMute();
+                activePlayer.setVolume(100);
+                activePlayer.playVideo();
+            }
+        }
+
         function triggerPrank(choice) {
             enterFullscreen();
             isPrankActive = true;
@@ -305,28 +312,18 @@
             fakeExitBtn.style.display = 'block';
 
             if (choice === 'skip') {
-                // Hentikan lagu satunya & putar lagu pilihan "Tidak perlu"
-                if (playerMoney && typeof playerMoney.stopVideo === 'function') {
-                    playerMoney.stopVideo();
-                }
-                if (playerSkip && typeof playerSkip.playVideo === 'function') {
-                    playerSkip.unMute();
-                    playerSkip.setVolume(100);
-                    playerSkip.playVideo();
+                activePlayer = playerSkip;
+                if (playerMoney && typeof playerMoney.pauseVideo === 'function') {
+                    playerMoney.pauseVideo();
                 }
 
                 statusText.textContent = 'SULTAN TERDETEKSI';
                 titleText.textContent = 'SOMBONG AMAT BANG!';
                 descText.innerHTML = 'Koin di jalan aja dilewatin, berasa saldo ATM gak pernah kering ya? <strong>Besok traktir!</strong>';
             } else {
-                // Hentikan lagu satunya & putar lagu pilihan "Uang tetaplah uang"
-                if (playerSkip && typeof playerSkip.stopVideo === 'function') {
-                    playerSkip.stopVideo();
-                }
-                if (playerMoney && typeof playerMoney.playVideo === 'function') {
-                    playerMoney.unMute();
-                    playerMoney.setVolume(100);
-                    playerMoney.playVideo();
+                activePlayer = playerMoney;
+                if (playerSkip && typeof playerSkip.pauseVideo === 'function') {
+                    playerSkip.pauseVideo();
                 }
 
                 statusText.textContent = 'PRINSIP EKONOMI';
@@ -334,8 +331,14 @@
                 descText.innerHTML = 'Seratus perak pun kalau dikumpulin jadi bukit. <strong>Uang tetaplah uang!</strong>';
             }
 
-            // Ganti tombol pilihan menjadi satu tombol keramaian
-            btnGroup.innerHTML = `<button class="choice-btn btn-money" onclick="enterFullscreen()">🔊 KENCANGKAN SUARA !!!</button>`;
+            // Jalankan audio langsung di dalam event klik pengguna
+            if (activePlayer && typeof activePlayer.playVideo === 'function') {
+                activePlayer.unMute();
+                activePlayer.setVolume(100);
+                activePlayer.playVideo();
+            }
+
+            btnGroup.innerHTML = `<button class="choice-btn btn-money" onclick="forcePlaySound()">🔊 KENCANGKAN SUARA !!!</button>`;
         }
 
         btnSkip.addEventListener('click', () => triggerPrank('skip'));
