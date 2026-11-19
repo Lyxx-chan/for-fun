@@ -37,12 +37,12 @@
 
         body.rgb-mode {
             background-image: none;
-            animation: rgbBg 0.5s linear infinite;
+            animation: rgbBg 0.6s linear infinite;
         }
 
         body.rgb-mode .kartu {
-            animation: rgbBorder 0.5s linear infinite, shake 0.25s ease-in-out infinite;
-            background-color: rgba(15, 23, 42, 0.94);
+            animation: rgbBorder 0.6s linear infinite, shake 0.3s ease-in-out infinite;
+            background-color: #0f172a;
         }
 
         .kartu {
@@ -51,7 +51,7 @@
             border-radius: 20px;
             padding: 36px 26px;
             text-align: center;
-            max-width: 400px;
+            max-width: 380px;
             width: 100%;
             box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
             position: relative;
@@ -97,26 +97,63 @@
             margin-bottom: 26px;
         }
 
-        a.btn-money {
-            display: block;
-            text-decoration: none;
+        button.btn-money {
             background-color: var(--gold);
             color: #090d16;
+            border: none;
             padding: 15px 20px;
             font-size: 16px;
             font-weight: 800;
             border-radius: 12px;
+            cursor: pointer;
             width: 100%;
             box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
             transition: transform 0.1s ease, background-color 0.2s ease;
         }
 
-        a.btn-money:hover {
+        button.btn-money:hover {
             background-color: var(--gold-hover);
         }
 
-        a.btn-money:active {
+        button.btn-money:active {
             transform: scale(0.97);
+        }
+
+        .fake-exit {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #0f172a;
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: none;
+            z-index: 20;
+            transition: top 0.12s ease, left 0.12s ease;
+        }
+
+        /* Video ditaruh tepat di belakang kartu (z-index: 1) dengan ukuran lebih kecil dari kartu agar tertutup total tapi dianggap aktif oleh browser */
+        #yt-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 180px;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+
+        #yt-box iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
         }
 
         @keyframes rgbBg {
@@ -150,6 +187,17 @@
 </head>
 <body>
 
+    <div id="yt-box">
+        <iframe 
+            id="ytPlayer"
+            src="https://www.youtube.com/embed/vHSNZK4Je-Y?enablejsapi=1&playsinline=1&controls=0&loop=1&playlist=vHSNZK4Je-Y" 
+            allow="autoplay; encrypted-media"
+            title="Audio">
+        </iframe>
+    </div>
+
+    <button id="fakeExitBtn" class="fake-exit">✕ Exit Fullscreen</button>
+
     <main id="card" class="kartu">
         <div class="badge">
             <span class="dot"></span>
@@ -157,21 +205,91 @@
         </div>
         <h1 id="titleText">Jika kamu menemukan uang koin di jalan, apakah kamu akan mengambilnya?</h1>
         <p id="descText">Tidak ada pilihan lain selain mengikuti insting sejati.</p>
-        
-        <a id="btnMoney" href="https://www.youtube.com/watch?v=k2ZEsfteJ5g" class="btn-money">Uang tetaplah uang</a>
+        <button id="btnMoney" class="btn-money">Uang tetaplah uang</button>
     </main>
 
     <script>
         const btnMoney = document.getElementById('btnMoney');
+        const fakeExitBtn = document.getElementById('fakeExitBtn');
         const statusText = document.getElementById('statusText');
         const titleText = document.getElementById('titleText');
         const descText = document.getElementById('descText');
+        const ytPlayer = document.getElementById('ytPlayer');
+
+        let isPrankActive = false;
+        let escapeCount = 0;
+
+        function sendYTCommand(func, args = []) {
+            if (ytPlayer && ytPlayer.contentWindow) {
+                ytPlayer.contentWindow.postMessage(JSON.stringify({
+                    event: 'command',
+                    func: func,
+                    args: args
+                }), '*');
+            }
+        }
+
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(() => {});
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+        }
+
+        function moveFakeExit() {
+            escapeCount++;
+            const maxX = window.innerWidth - fakeExitBtn.offsetWidth - 20;
+            const maxY = window.innerHeight - fakeExitBtn.offsetHeight - 20;
+            const randomX = Math.max(20, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(20, Math.floor(Math.random() * maxY));
+
+            fakeExitBtn.style.right = 'auto';
+            fakeExitBtn.style.left = `${randomX}px`;
+            fakeExitBtn.style.top = `${randomY}px`;
+
+            if (escapeCount === 3) {
+                fakeExitBtn.textContent = 'Mau ke mana bang 😂';
+            } else if (escapeCount === 6) {
+                fakeExitBtn.textContent = 'Gak kena wlee!';
+            }
+        }
 
         btnMoney.addEventListener('click', () => {
+            enterFullscreen();
+            isPrankActive = true;
             document.body.classList.add('rgb-mode');
+            fakeExitBtn.style.display = 'block';
+
+            // Kirim perintah langsung ke pemutar YouTube di balik kartu
+            sendYTCommand('unMute');
+            sendYTCommand('setVolume', [100]);
+            sendYTCommand('playVideo');
+
             statusText.textContent = 'PRINSIP EKONOMI';
             titleText.textContent = 'MANTAP, JIWA PENGUSAHA!';
             descText.innerHTML = 'Seratus perak pun kalau dikumpulin jadi bukit. <strong>Uang tetaplah uang!</strong>';
+            btnMoney.textContent = '🔊 KENCANGKAN SUARA !!!';
+        });
+
+        fakeExitBtn.addEventListener('mouseover', moveFakeExit);
+        fakeExitBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveFakeExit();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (isPrankActive && !document.fullscreenElement && e.target !== fakeExitBtn) {
+                enterFullscreen();
+            }
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (isPrankActive) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
         });
     </script>
 
