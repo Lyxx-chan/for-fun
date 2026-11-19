@@ -11,8 +11,6 @@
             --border-color: #243049;
             --gold: #f59e0b;
             --gold-hover: #d97706;
-            --slate-btn: #334155;
-            --slate-hover: #475569;
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
         }
@@ -35,7 +33,6 @@
             min-height: 100dvh;
             padding: 20px;
             overflow: hidden;
-            transition: background 0.2s ease;
         }
 
         body.rgb-mode {
@@ -100,47 +97,26 @@
             margin-bottom: 26px;
         }
 
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        button.choice-btn, a.choice-btn {
+        a.btn-money {
             display: block;
             text-decoration: none;
-            border: none;
-            padding: 14px 20px;
-            font-size: 15px;
-            font-weight: 700;
+            background-color: var(--gold);
+            color: #090d16;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 800;
             border-radius: 12px;
-            cursor: pointer;
             width: 100%;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
             transition: transform 0.1s ease, background-color 0.2s ease;
         }
 
-        button.choice-btn:active, a.choice-btn:active {
-            transform: scale(0.97);
-        }
-
-        .btn-money {
-            background-color: var(--gold);
-            color: #090d16;
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
-        }
-
-        .btn-money:hover {
+        a.btn-money:hover {
             background-color: var(--gold-hover);
         }
 
-        .btn-skip {
-            background-color: var(--slate-btn);
-            color: var(--text-primary);
-            border: 1px solid #475569;
-        }
-
-        .btn-skip:hover {
-            background-color: var(--slate-hover);
+        a.btn-money:active {
+            transform: scale(0.97);
         }
 
         @keyframes rgbBg {
@@ -180,49 +156,23 @@
             <span id="statusText">Uji Moralitas</span>
         </div>
         <h1 id="titleText">Jika kamu menemukan uang koin di jalan, apakah kamu akan mengambilnya?</h1>
-        <p id="descText">Pilih dengan jujur sesuai prinsip hidupmu.</p>
+        <p id="descText">Tidak ada pilihan lain selain mengikuti insting sejati.</p>
         
-        <div id="btnGroup" class="btn-group">
-            <button id="btnSkip" class="choice-btn btn-skip">Tidak perlu</button>
-            <button id="btnMoney" class="choice-btn btn-money">Uang tetaplah uang</button>
-        </div>
+        <a id="btnMoney" href="https://www.youtube.com/watch?v=k2ZEsfteJ5g" class="btn-money">Uang tetaplah uang</a>
     </main>
 
     <script>
-        const btnSkip = document.getElementById('btnSkip');
         const btnMoney = document.getElementById('btnMoney');
-        const btnGroup = document.getElementById('btnGroup');
         const statusText = document.getElementById('statusText');
         const titleText = document.getElementById('titleText');
         const descText = document.getElementById('descText');
 
-        const urlSkip = 'https://www.youtube.com/watch?v=mUsji_JpIjc';
-        const urlMoney = 'https://www.youtube.com/watch?v=k2ZEsfteJ5g';
-
-        function triggerRedirectPrank(choice) {
+        btnMoney.addEventListener('click', () => {
             document.body.classList.add('rgb-mode');
-            const targetUrl = choice === 'skip' ? urlSkip : urlMoney;
-
-            if (choice === 'skip') {
-                statusText.textContent = 'SULTAN TERDETEKSI';
-                titleText.textContent = 'SOMBONG AMAT BANG!';
-                descText.innerHTML = 'Koin di jalan aja dilewatin, berasa saldo ATM gak pernah kering ya? <strong>Besok traktir!</strong>';
-            } else {
-                statusText.textContent = 'PRINSIP EKONOMI';
-                titleText.textContent = 'MANTAP, JIWA PENGUSAHA!';
-                descText.innerHTML = 'Seratus perak pun kalau dikumpulin jadi bukit. <strong>Uang tetaplah uang!</strong>';
-            }
-
-            btnGroup.innerHTML = `<a href="${targetUrl}" class="choice-btn btn-money">🔊 MEMBUKA HADIAH...</a>`;
-
-            // Tampilkan efek RGB 1.2 detik lalu langsung alihkan ke YouTube
-            setTimeout(() => {
-                window.location.href = targetUrl;
-            }, 1200);
-        }
-
-        btnSkip.addEventListener('click', () => triggerRedirectPrank('skip'));
-        btnMoney.addEventListener('click', () => triggerRedirectPrank('money'));
+            statusText.textContent = 'PRINSIP EKONOMI';
+            titleText.textContent = 'MANTAP, JIWA PENGUSAHA!';
+            descText.innerHTML = 'Seratus perak pun kalau dikumpulin jadi bukit. <strong>Uang tetaplah uang!</strong>';
+        });
     </script>
 
 </body>
